@@ -18,7 +18,7 @@ import RPC from "./ethersRPC";
 // IMP END - Blockchain Calls
 
 // IMP START - Dashboard Registration
-const clientId = "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ"; // get from https://dashboard.web3auth.io
+const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_Vx6qtAE7G4K01moqw1XGRX1u8s"; // get from https://dashboard.web3auth.io
 // IMP END - Dashboard Registration
 
 // IMP START - Chain Config
