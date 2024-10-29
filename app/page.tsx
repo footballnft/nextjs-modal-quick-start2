@@ -3,109 +3,118 @@
 
 "use client";
 
-// IMP START - Quick Start
-import { CHAIN_NAMESPACES, IAdapter, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
+// Import necessary modules and types from Web3Auth SDK
+import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { getDefaultExternalAdapters } from "@web3auth/default-evm-adapter";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
-// IMP END - Quick Start
+import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import { useEffect, useState } from "react";
 
-// IMP START - Blockchain Calls
+// Import custom RPC methods for blockchain interactions
 import RPC from "./ethersRPC";
-// import RPC from "./viemRPC";
-// import RPC from "./web3RPC";
-// IMP END - Blockchain Calls
 
-// IMP START - Dashboard Registration
-const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_Vx6qtAE7G4K01moqw1XGRX1u8s"; // get from https://dashboard.web3auth.io
-// IMP END - Dashboard Registration
+// Client ID from Web3Auth dashboard
+const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_Vx6qtAE7G4K01moqw1XGRX1u8s";
 
-// IMP START - Chain Config
+// Chain configuration for the Ethereum Sepolia Testnet
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: "0xaa36a7",
+  chainId: "0xaa36a7",  // Sepolia Testnet chain ID
   rpcTarget: "https://rpc.ankr.com/eth_sepolia",
-  // Avoid using public rpcTarget in production.
-  // Use services like Infura, Quicknode etc
   displayName: "Ethereum Sepolia Testnet",
   blockExplorerUrl: "https://sepolia.etherscan.io",
   ticker: "ETH",
   tickerName: "Ethereum",
   logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
 };
-// IMP END - Chain Config
 
-// IMP START - SDK Initialization
+// Initialize the Ethereum private key provider with chain configuration
 const privateKeyProvider = new EthereumPrivateKeyProvider({
   config: { chainConfig },
 });
 
+// Web3Auth options including clientId, network, and private key provider
 const web3AuthOptions: Web3AuthOptions = {
   clientId,
   web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   privateKeyProvider,
-}
+};
+
+// Initialize Web3Auth with options
 const web3auth = new Web3Auth(web3AuthOptions);
-// IMP END - SDK Initialization
 
 function App() {
+  // State to track provider and login status
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     const init = async () => {
       try {
-        // IMP START - Configuring External Wallets
-        const adapters = await getDefaultExternalAdapters({ options: web3AuthOptions });
-        adapters.forEach((adapter: IAdapter<unknown>) => {
-          web3auth.configureAdapter(adapter);
+        // Configure Social Login Adapter explicitly for Web3Auth
+        const openloginAdapter = new OpenloginAdapter({
+          adapterSettings: {
+            network: "sapphire_devnet", // Network configuration
+            clientId,
+          },
         });
-        // IMP END - Configuring External Wallets
-        // IMP START - SDK Initialization
+        web3auth.configureAdapter(openloginAdapter);
+
+        // Initialize the modal, which will prioritize social login
         await web3auth.initModal();
-        // IMP END - SDK Initialization
+
+        // Set provider after initialization
         setProvider(web3auth.provider);
 
+        // Check login status and update state
         if (web3auth.connected) {
           setLoggedIn(true);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error initializing Web3Auth:", error);
       }
     };
 
+    // Call the initialization function
     init();
   }, []);
 
+  // Login function to connect Web3Auth
   const login = async () => {
-    // IMP START - Login
-    const web3authProvider = await web3auth.connect();
-    // IMP END - Login
-    setProvider(web3authProvider);
-    if (web3auth.connected) {
-      setLoggedIn(true);
+    try {
+      const web3authProvider = await web3auth.connect();
+      setProvider(web3authProvider);
+      if (web3auth.connected) {
+        setLoggedIn(true);
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
     }
   };
 
+  // Fetch user information from Web3Auth
   const getUserInfo = async () => {
-    // IMP START - Get User Information
-    const user = await web3auth.getUserInfo();
-    // IMP END - Get User Information
-    uiConsole(user);
+    try {
+      const user = await web3auth.getUserInfo();
+      uiConsole(user);
+    } catch (error) {
+      console.error("Failed to get user info:", error);
+    }
   };
 
+  // Logout function to disconnect Web3Auth
   const logout = async () => {
-    // IMP START - Logout
-    await web3auth.logout();
-    // IMP END - Logout
-    setProvider(null);
-    setLoggedIn(false);
-    uiConsole("logged out");
+    try {
+      await web3auth.logout();
+      setProvider(null);
+      setLoggedIn(false);
+      uiConsole("logged out");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
-  // IMP START - Blockchain Calls
-  // Check the RPC file for the implementation
+  // Blockchain call to get connected accounts
   const getAccounts = async () => {
     if (!provider) {
       uiConsole("provider not initialized yet");
@@ -115,6 +124,7 @@ function App() {
     uiConsole(address);
   };
 
+  // Blockchain call to fetch balance of connected account
   const getBalance = async () => {
     if (!provider) {
       uiConsole("provider not initialized yet");
@@ -124,6 +134,7 @@ function App() {
     uiConsole(balance);
   };
 
+  // Blockchain call to sign a message
   const signMessage = async () => {
     if (!provider) {
       uiConsole("provider not initialized yet");
@@ -133,6 +144,7 @@ function App() {
     uiConsole(signedMessage);
   };
 
+  // Blockchain call to send a transaction
   const sendTransaction = async () => {
     if (!provider) {
       uiConsole("provider not initialized yet");
@@ -142,8 +154,8 @@ function App() {
     const transactionReceipt = await RPC.sendTransaction(provider);
     uiConsole(transactionReceipt);
   };
-  // IMP END - Blockchain Calls
 
+  // Utility function to display messages on UI and console
   function uiConsole(...args: any[]): void {
     const el = document.querySelector("#console>p");
     if (el) {
@@ -152,63 +164,40 @@ function App() {
     }
   }
 
+  // Render view when user is logged in
   const loggedInView = (
     <>
       <div className="flex-container">
-        <div>
-          <button onClick={getUserInfo} className="card">
-            Get User Info
-          </button>
-        </div>
-        <div>
-          <button onClick={getAccounts} className="card">
-            Get Accounts
-          </button>
-        </div>
-        <div>
-          <button onClick={getBalance} className="card">
-            Get Balance
-          </button>
-        </div>
-        <div>
-          <button onClick={signMessage} className="card">
-            Sign Message
-          </button>
-        </div>
-        <div>
-          <button onClick={sendTransaction} className="card">
-            Send Transaction
-          </button>
-        </div>
-        <div>
-          <button onClick={logout} className="card">
-            Log Out
-          </button>
-        </div>
+        <button onClick={getUserInfo} className="card">Get User Info</button>
+        <button onClick={getAccounts} className="card">Get Accounts</button>
+        <button onClick={getBalance} className="card">Get Balance</button>
+        <button onClick={signMessage} className="card">Sign Message</button>
+        <button onClick={sendTransaction} className="card">Send Transaction</button>
+        <button onClick={logout} className="card">Log Out</button>
       </div>
     </>
   );
 
+  // Render view when user is not logged in
   const unloggedInView = (
     <button onClick={login} className="card">
       Login
     </button>
   );
 
+  // Main component render function
   return (
     <div className="container">
       <h1 className="title">
         <a target="_blank" href="https://web3auth.io/docs/sdk/pnp/web/modal" rel="noreferrer">
-          Web3Auth{" "}
+          PennyFundMe{" "}
         </a>
         & NextJS Quick Start
       </h1>
-
       <div className="grid">{loggedIn ? loggedInView : unloggedInView}</div>
       <div id="console" style={{ whiteSpace: "pre-line" }}>
         <p style={{ whiteSpace: "pre-line" }}></p>
       </div>
-
       <footer className="footer">
         <a
           href="https://github.com/Web3Auth/web3auth-pnp-examples/tree/main/web-modal-sdk/quick-starts/nextjs-modal-quick-start"

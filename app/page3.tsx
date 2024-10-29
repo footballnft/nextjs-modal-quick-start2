@@ -45,28 +45,8 @@ const web3AuthOptions: Web3AuthOptions = {
   clientId,
   web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   privateKeyProvider,
-};
-
+}
 const web3auth = new Web3Auth(web3AuthOptions);
-
-const modalConfig = {
-  google: {
-    label: "Login with Google",
-    loginMethodsOrder: ["google"],
-  },
-  facebook: {
-    label: "Login with Facebook",
-    loginMethodsOrder: ["facebook"],
-  },
-  twitter: {
-    label: "Login with Twitter",
-    loginMethodsOrder: ["twitter"],
-  },
-  reddit: {
-    label: "Login with Reddit",
-    loginMethodsOrder: ["reddit"],
-  },
-};
 // IMP END - SDK Initialization
 
 function App() {
@@ -82,9 +62,8 @@ function App() {
           web3auth.configureAdapter(adapter);
         });
         // IMP END - Configuring External Wallets
-
-        // IMP START - SDK Initialization with modalConfig
-        await web3auth.initModal({ modalConfig });
+        // IMP START - SDK Initialization
+        await web3auth.initModal();
         // IMP END - SDK Initialization
         setProvider(web3auth.provider);
 
