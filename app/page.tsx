@@ -19,13 +19,13 @@ const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_V
 // Chain configuration for the Ethereum Sepolia Testnet
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: "0xaa36a7",  // Sepolia Testnet chain ID
-  rpcTarget: "https://rpc.ankr.com/eth_sepolia",
-  displayName: "Ethereum Sepolia Testnet",
-  blockExplorerUrl: "https://sepolia.etherscan.io",
-  ticker: "ETH",
-  tickerName: "Ethereum",
-  logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+  chainId: "0x13882", // hex of 80002, polygon testnet
+  rpcTarget: "https://rpc.ankr.com/polygon_amoy",
+  displayName: "Polygon Amoy Testnet",
+  blockExplorerUrl: "https://amoy.polygonscan.com",
+  ticker: "MATIC",
+  tickerName: "Matic",
+  logo: "https://cryptologos.cc/logos/matic-network-matic-logo.png",
 };
 
 // Initialize the Ethereum private key provider with chain configuration
