@@ -9,7 +9,6 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import { useEffect, useState } from "react";
-import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin"; // Import WalletServicesPlugin
 
 // Import custom RPC methods for blockchain interactions
 import RPC from "./ethersRPC";
@@ -70,7 +69,6 @@ function App() {
         // Check login status and update state
         if (web3auth.connected) {
           setLoggedIn(true);
-          initializeWalletServicesPlugin(web3auth.provider); // Initialize WalletServicesPlugin on login
         }
       } catch (error) {
         console.error("Error initializing Web3Auth:", error);
@@ -81,13 +79,6 @@ function App() {
     init();
   }, []);
 
-  // Function to initialize WalletServicesPlugin
-  const initializeWalletServicesPlugin = (provider: IProvider | null) => {
-    const walletServicesPlugin = new WalletServicesPlugin({ provider });
-    web3auth.addPlugin(walletServicesPlugin);
-    console.log("WalletServicesPlugin initialized and added to Web3Auth");
-  };
-
   // Login function to connect Web3Auth
   const login = async () => {
     try {
@@ -95,7 +86,6 @@ function App() {
       setProvider(web3authProvider);
       if (web3auth.connected) {
         setLoggedIn(true);
-        initializeWalletServicesPlugin(web3authProvider); // Initialize WalletServicesPlugin on successful login
       }
     } catch (error) {
       console.error("Login failed:", error);
