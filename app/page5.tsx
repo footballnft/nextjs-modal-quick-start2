@@ -8,7 +8,7 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import RPC from "./ethersRPC";
 
 const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_Vx6qtAE7G4K01moqw1XGRX1u8s";
@@ -28,29 +28,30 @@ const privateKeyProvider = new EthereumPrivateKeyProvider({
   config: { chainConfig },
 });
 
+const web3AuthOptions: Web3AuthOptions = {
+  clientId,
+  web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
+  privateKeyProvider,
+};
+
+const web3auth = new Web3Auth(web3AuthOptions);
+
 function App() {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [walletServicesPlugin, setWalletServicesPlugin] = useState<WalletServicesPlugin | null>(null);
-  const web3auth = useRef<Web3Auth | null>(null);
 
   useEffect(() => {
     const init = async () => {
       try {
-        web3auth.current = new Web3Auth({
-          clientId,
-          web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
-          privateKeyProvider,
-        });
-
         const openloginAdapter = new OpenloginAdapter({
           adapterSettings: {
             network: "sapphire_devnet",
             clientId,
           },
         });
-        web3auth.current.configureAdapter(openloginAdapter);
-        await web3auth.current.initModal();
+        web3auth.configureAdapter(openloginAdapter);
+        await web3auth.initModal();
 
         const walletPlugin = new WalletServicesPlugin({
           wsEmbedOpts: {},
@@ -59,11 +60,11 @@ function App() {
             confirmationStrategy: "modal",
           },
         });
-        web3auth.current.addPlugin(walletPlugin);
+        web3auth.addPlugin(walletPlugin);
         setWalletServicesPlugin(walletPlugin);
 
-        setProvider(web3auth.current.provider);
-        if (web3auth.current.connected) {
+        setProvider(web3auth.provider);
+        if (web3auth.connected) {
           setLoggedIn(true);
           // Redirect user to Wallet Services UI after login
           await walletPlugin.showCheckout();
@@ -78,14 +79,12 @@ function App() {
 
   const login = async () => {
     try {
-      if (web3auth.current) {
-        const web3authProvider = await web3auth.current.connect();
-        setProvider(web3authProvider);
-        setLoggedIn(true);
-        // Redirect to Wallet Services UI upon login
-        if (walletServicesPlugin) {
-          await walletServicesPlugin.showCheckout();
-        }
+      const web3authProvider = await web3auth.connect();
+      setProvider(web3authProvider);
+      setLoggedIn(true);
+      // Redirect to Wallet Services UI upon login
+      if (walletServicesPlugin) {
+        await walletServicesPlugin.showCheckout();
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -94,11 +93,9 @@ function App() {
 
   const logout = async () => {
     try {
-      if (web3auth.current) {
-        await web3auth.current.logout();
-        setProvider(null);
-        setLoggedIn(false);
-      }
+      await web3auth.logout();
+      setProvider(null);
+      setLoggedIn(false);
     } catch (error) {
       console.error("Logout failed:", error);
     }
