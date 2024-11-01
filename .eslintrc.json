@@ -8,6 +8,7 @@
   "rules": {
     "@typescript-eslint/no-use-before-define": ["error", { "functions": true, "classes": true }], // Example of additional options
     "no-console": "off",
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars":"off"
   }
 }

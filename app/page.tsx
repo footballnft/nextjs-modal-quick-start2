@@ -5,11 +5,11 @@
 
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
+import { Web3Auth } from "@web3auth/modal";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin";
 import { useEffect, useState, useRef } from "react";
-import RPC from "./ethersRPC";
+// import RPC from "./ethersRPC";
 
 const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_Vx6qtAE7G4K01moqw1XGRX1u8s";
 
