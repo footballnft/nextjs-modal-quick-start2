@@ -9,6 +9,7 @@ import { Web3Auth } from "@web3auth/modal";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin";
 import { useEffect, useState, useRef } from "react";
+// import RPC from "./ethersRPC";
 
 const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_Vx6qtAE7G4K01moqw1XGRX1u8s";
 
@@ -64,7 +65,7 @@ function App() {
         setProvider(web3auth.current.provider);
         if (web3auth.current.connected) {
           setLoggedIn(true);
-          // Optionally, directly show Wallet Services UI upon login
+          // Redirect user to Wallet Services UI after login
           await walletPlugin.showCheckout();
         }
       } catch (error) {
@@ -81,6 +82,7 @@ function App() {
         const web3authProvider = await web3auth.current.connect();
         setProvider(web3authProvider);
         setLoggedIn(true);
+        // Redirect to Wallet Services UI upon login
         if (walletServicesPlugin) {
           await walletServicesPlugin.showCheckout();
         }
@@ -102,18 +104,6 @@ function App() {
     }
   };
 
-  const loggedInView = (
-    <div>
-      <p>Welcome to PennyFundMe! You’re now logged in.</p>
-      <button onClick={logout} className="card">
-        Logout
-      </button>
-      <button onClick={() => walletServicesPlugin?.showCheckout()} className="card">
-        Go to Wallet Services
-      </button>
-    </div>
-  );
-
   const unloggedInView = (
     <button onClick={login} className="card">
       Login
@@ -128,7 +118,7 @@ function App() {
         </a>
         & NextJS Quick Start
       </h1>
-      <div className="grid">{loggedIn ? loggedInView : unloggedInView}</div>
+      <div className="grid">{loggedIn ? <p>Redirecting to Wallet Services...</p> : unloggedInView}</div>
     </div>
   );
 }
