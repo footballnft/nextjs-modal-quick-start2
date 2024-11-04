@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable no-console */
+
 "use client";
 
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
@@ -14,8 +17,10 @@ const chainConfig = {
   chainId: "0x13882",
   rpcTarget: "https://rpc.ankr.com/polygon_amoy",
   displayName: "Polygon Amoy Testnet",
+  blockExplorerUrl: "https://amoy.polygonscan.com",
   ticker: "MATIC",
   tickerName: "Matic",
+  logo: "https://cryptologos.cc/logos/matic-network-matic-logo.png",
 };
 
 const privateKeyProvider = new EthereumPrivateKeyProvider({
@@ -27,7 +32,6 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [walletServicesPlugin, setWalletServicesPlugin] = useState<WalletServicesPlugin | null>(null);
   const web3auth = useRef<Web3Auth | null>(null);
-  const [pluginConnected, setPluginConnected] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -53,8 +57,8 @@ function App() {
             whiteLabel: {
               showWidgetButton: true,
               buttonPosition: "bottom-right",
-              logoDark: "https://web3auth.io/images/w3a-D-Favicon-1.svg",
-              logoLight: "https://web3auth.io/images/w3a-L-Favicon-1.svg",
+              logoDark: "https://web3auth.io/images/w3a-D-Favicon-1.svg", // Replace with your logo URL for dark theme
+              logoLight: "https://web3auth.io/images/w3a-L-Favicon-1.svg", // Replace with your logo URL for light theme
             },
             confirmationStrategy: "modal",
           },
@@ -62,15 +66,11 @@ function App() {
         web3auth.current.addPlugin(walletPlugin);
         setWalletServicesPlugin(walletPlugin);
 
-        // Listen for the connected event
-        walletPlugin.on("connected", () => {
-          console.log("WalletServicesPlugin connected");
-          setPluginConnected(true);
-        });
-
         setProvider(web3auth.current.provider);
         if (web3auth.current.connected) {
           setLoggedIn(true);
+          // Optionally, directly show Wallet Services UI upon login
+          await walletPlugin.showCheckout();
         }
       } catch (error) {
         console.error("Error initializing Web3Auth:", error);
@@ -86,6 +86,10 @@ function App() {
         const web3authProvider = await web3auth.current.connect();
         setProvider(web3authProvider);
         setLoggedIn(true);
+        if (walletServicesPlugin) {
+          console.log("Opening Wallet Services...");
+          await walletServicesPlugin.showCheckout();
+        }
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -105,15 +109,15 @@ function App() {
   };
 
   const openWalletServices = async () => {
-    if (walletServicesPlugin && pluginConnected) {
+    if (walletServicesPlugin) {
+      console.log("Attempting to open Wallet Services...");
       try {
-        console.log("Attempting to open Wallet Services...");
         await walletServicesPlugin.showCheckout();
       } catch (error) {
         console.error("Failed to open Wallet Services:", error);
       }
     } else {
-      console.error("WalletServicesPlugin is not initialized or not connected");
+      console.error("WalletServicesPlugin is not initialized");
     }
   };
 
@@ -123,9 +127,11 @@ function App() {
       <button onClick={logout} className="card">
         Logout
       </button>
-      <button onClick={openWalletServices} className="card">
-        Go to Wallet Services
-      </button>
+      {walletServicesPlugin && (
+        <button onClick={openWalletServices} className="card">
+          Go to Wallet Services
+        </button>
+      )}
     </div>
   );
 
