@@ -108,7 +108,7 @@ function App() {
     if (walletServicesPlugin && pluginConnected) {
       try {
         console.log("Attempting to open Wallet Services...");
-        await walletServicesPlugin.showCheckout();
+        await walletServicesPlugin.showWalletUi();
       } catch (error) {
         console.error("Failed to open Wallet Services:", error);
       }
