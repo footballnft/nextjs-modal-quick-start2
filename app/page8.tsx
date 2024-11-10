@@ -3,15 +3,15 @@
 import { CHAIN_NAMESPACES, IAdapter, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
+// import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
+// import { getDefaultExternalAdapters } from "@web3auth/default-evm-adapter";
 import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin";
 import { AccountAbstractionProvider, SafeSmartAccount } from "@web3auth/account-abstraction-provider";
 import { useEffect, useState, useRef } from "react";
 
-// Web3Auth client ID and Pimlico API key (replace with your actual API key)
 const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_Vx6qtAE7G4K01moqw1XGRX1u8s";
-const pimlicoAPIKey = "pim_NQiLku6tPP9FW3Tn7B78JH";
+const pimlicoAPIKey = "pim_NQiLku6tPP9FW3Tn7B78JH"; // Replace with your Pimlico API key
 
-// Polygon Amoy testnet configuration for Web3Auth and Pimlico
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0x13882",
@@ -21,24 +21,24 @@ const chainConfig = {
   tickerName: "Matic",
 };
 
-// Ethereum private key provider setup for standard transactions
 const privateKeyProvider = new EthereumPrivateKeyProvider({
   config: { chainConfig },
 });
 
-// Account Abstraction Provider setup with Pimlico Bundler and Paymaster
+// Initialize the Account Abstraction Provider with Pimlico Bundler and Paymaster
 const accountAbstractionProvider = new AccountAbstractionProvider({
   config: {
     chainConfig,
     smartAccountInit: new SafeSmartAccount(),
     bundlerConfig: {
-      url: `https://api.pimlico.io/v2/13882/rpc?apikey=${pimlicoAPIKey}`, // Pimlico endpoint for bundler
+      url: `https://api.pimlico.io/v2/13882/rpc?apikey=${pimlicoAPIKey}`, // Update with correct chain ID for Pimlico if needed
     },
     paymasterConfig: {
-      url: `https://api.pimlico.io/v2/13882/rpc?apikey=${pimlicoAPIKey}`, // Pimlico endpoint for paymaster
+      url: `https://api.pimlico.io/v2/13882/rpc?apikey=${pimlicoAPIKey}`,
     },
   },
 });
+
 
 function App() {
   const [provider, setProvider] = useState<IProvider | null>(null);
@@ -50,20 +50,38 @@ function App() {
   useEffect(() => {
     const init = async () => {
       try {
-        // Web3Auth configuration options
+
         const web3AuthOptions: Web3AuthOptions = {
           clientId,
           web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
-          privateKeyProvider, // Standard transaction provider
-          accountAbstractionProvider, // SCW and gasless transactions provider
-          useAAWithExternalWallet: true, // Enables Smart Account for external wallets
-        };
-
-        // Initialize Web3Auth instance
+          privateKeyProvider, // Original provider for standard transactions
+          accountAbstractionProvider, // Use this provider for SCW and gasless transactions
+          useAAWithExternalWallet: true, // Enable Smart Account for external wallets as well
+        }
+        // const web3auth = new Web3Auth(web3AuthOptions);
+        // IMP END - SDK Initialization
         web3auth.current = new Web3Auth(web3AuthOptions);
-        await web3auth.current.initModal(); // Open modal for user authentication
 
-        // Initialize WalletServicesPlugin for additional wallet features
+        // IMP START - Configuring External Wallets
+        //const adapters = await getDefaultExternalAdapters({ options: web3AuthOptions });
+
+       // adapters.forEach((adapter) => {
+         // if (web3auth.current && "configureAdapter" in web3auth.current) {
+            // @ts-ignore: configureAdapter might not be part of the type in older versions
+            // web3auth.current.configureAdapter(adapter as IAdapter<unknown>);
+         // }
+       // });
+
+        /*const openloginAdapter = new OpenloginAdapter({
+          adapterSettings: {
+            network: "sapphire_devnet",
+            clientId,
+          },
+        });*/
+
+        //web3auth.current.configureAdapter(adapter);
+        await web3auth.current.initModal();
+
         const walletPlugin = new WalletServicesPlugin({
           wsEmbedOpts: {},
           walletInitOptions: {
@@ -76,18 +94,15 @@ function App() {
             confirmationStrategy: "modal",
           },
         });
-
-        // Add WalletServicesPlugin to Web3Auth
         web3auth.current.addPlugin(walletPlugin);
         setWalletServicesPlugin(walletPlugin);
 
-        // Listen for plugin connection event
+        // Listen for the connected event
         walletPlugin.on("connected", () => {
           console.log("WalletServicesPlugin connected");
           setPluginConnected(true);
         });
 
-        // Set provider and login status
         setProvider(web3auth.current.provider);
         if (web3auth.current.connected) {
           setLoggedIn(true);
@@ -100,7 +115,6 @@ function App() {
     init();
   }, []);
 
-  // Handle user login
   const login = async () => {
     try {
       if (web3auth.current) {
@@ -113,7 +127,6 @@ function App() {
     }
   };
 
-  // Handle user logout
   const logout = async () => {
     try {
       if (web3auth.current) {
@@ -126,7 +139,6 @@ function App() {
     }
   };
 
-  // Open Wallet Services UI if plugin is connected
   const openWalletServices = async () => {
     if (walletServicesPlugin && pluginConnected) {
       try {
@@ -140,7 +152,6 @@ function App() {
     }
   };
 
-  // View when user is logged in
   const loggedInView = (
     <div>
       <p>Welcome to PennyFundMe! You’re now logged in.</p>
@@ -153,7 +164,6 @@ function App() {
     </div>
   );
 
-  // View when user is not logged in
   const unloggedInView = (
     <button onClick={login} className="card">
       Login
