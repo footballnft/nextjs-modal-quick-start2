@@ -1,5 +1,5 @@
 "use client";
-
+/*
 import { CHAIN_NAMESPACES, IAdapter, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
@@ -72,12 +72,12 @@ function App() {
          // }
        // });
 
-        /*const openloginAdapter = new OpenloginAdapter({
+        const openloginAdapter = new OpenloginAdapter({
           adapterSettings: {
             network: "sapphire_devnet",
             clientId,
           },
-        });*/
+        });
 
         //web3auth.current.configureAdapter(adapter);
         await web3auth.current.initModal();
@@ -184,3 +184,4 @@ function App() {
 }
 
 export default App;
+*/

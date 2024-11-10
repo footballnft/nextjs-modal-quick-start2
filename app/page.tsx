@@ -44,7 +44,7 @@ function App() {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [walletServicesPlugin, setWalletServicesPlugin] = useState<WalletServicesPlugin | null>(null);
-  let web3auth = useRef<Web3Auth | null>(null);
+  const web3auth = useRef<Web3Auth | null>(null);
   const [pluginConnected, setPluginConnected] = useState(false);
 
   useEffect(() => {
