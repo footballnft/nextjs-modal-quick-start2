@@ -44,6 +44,8 @@ const accountAbstractionProvider = new AccountAbstractionProvider({
   },
 });
 
+
+
 function App() {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [usdcBalance, setUsdcBalance] = useState<string>("");
@@ -59,6 +61,28 @@ function App() {
 
   const platformFee = amount * 0.05;
   const totalAmount = amount + platformFee;
+
+  const fetchWalletAddress = async () => {
+    if (provider) {
+      const signer = new ethers.BrowserProvider(provider).getSigner();
+      const address = await (await signer).getAddress();
+      setWalletAddress(address);
+    }
+  };
+
+
+  const fetchUsdcBalance = async () => {
+    if (provider) {
+      const signer = new ethers.BrowserProvider(provider).getSigner();
+      const usdcContract = new ethers.Contract(
+        usdcContractAddress,
+        ["function balanceOf(address owner) view returns (uint256)"],
+        await signer
+      );
+      const balance = await usdcContract.balanceOf(await (await signer).getAddress());
+      setUsdcBalance(formatUnits(balance, 6)); // Assuming USDC has 6 decimals
+    }
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -98,7 +122,7 @@ function App() {
         setProvider(web3auth.current.provider);
         if (web3auth.current.connected) {
           setLoggedIn(true);
-          await fetchUsdcBalance();
+          await fetchWalletAddress();
           await fetchUsdcBalance();
         }
       } catch (error) {
@@ -116,27 +140,6 @@ function App() {
     }
   }, [loggedIn]);
 
-  const fetchWalletAddress = async () => {
-    if (provider) {
-      const signer = new ethers.BrowserProvider(provider).getSigner();
-      const address = await (await signer).getAddress();
-      setWalletAddress(address);
-    }
-  };
-
-
-  const fetchUsdcBalance = async () => {
-    if (provider) {
-      const signer = new ethers.BrowserProvider(provider).getSigner();
-      const usdcContract = new ethers.Contract(
-        usdcContractAddress,
-        ["function balanceOf(address owner) view returns (uint256)"],
-        await signer
-      );
-      const balance = await usdcContract.balanceOf(await (await signer).getAddress());
-      setUsdcBalance(formatUnits(balance, 6)); // Assuming USDC has 6 decimals
-    }
-  };
 
   const sendWithPlatformFee = async () => {
     if (!provider || !recipientAddress || amount <= 0) return;
