@@ -137,6 +137,7 @@ function App() {
   useEffect(() => {
     if (loggedIn) {
       fetchUsdcBalance();
+      fetchWalletAddress();
     }
   }, [loggedIn]);
 

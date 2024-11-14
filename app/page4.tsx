@@ -53,6 +53,19 @@ function App() {
   const [pluginConnected, setPluginConnected] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const fetchUsdcBalance = async () => {
+    if (provider) {
+      const signer = new ethers.BrowserProvider(provider).getSigner();
+      const usdcContract = new ethers.Contract(
+        "USDC_CONTRACT_ADDRESS",
+        ["function balanceOf(address owner) view returns (uint256)"],
+        await signer
+      );
+      const balance = await usdcContract.balanceOf(await (await signer).getAddress());
+      setUsdcBalance(formatUnits(balance, 6)); // Assuming USDC has 6 decimals
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -106,18 +119,6 @@ function App() {
     }
   }, [loggedIn]);
 
-  const fetchUsdcBalance = async () => {
-    if (provider) {
-      const signer = new ethers.BrowserProvider(provider).getSigner();
-      const usdcContract = new ethers.Contract(
-        "USDC_CONTRACT_ADDRESS",
-        ["function balanceOf(address owner) view returns (uint256)"],
-        await signer
-      );
-      const balance = await usdcContract.balanceOf(await (await signer).getAddress());
-      setUsdcBalance(formatUnits(balance, 6)); // Assuming USDC has 6 decimals
-    }
-  };
 
   const sendWithPlatformFee = async (amount: number) => {
     if (!provider) return;
