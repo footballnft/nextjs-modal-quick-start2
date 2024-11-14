@@ -1,6 +1,7 @@
 "use client";
 
 import { CHAIN_NAMESPACES, IAdapter, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
+import { Box, Paper, Typography, Button, TextField } from "@mui/material";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
 import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin";
@@ -136,8 +137,9 @@ function App() {
    // Fetch balance when logged in state changes
   useEffect(() => {
     if (loggedIn) {
-      fetchUsdcBalance();
       fetchWalletAddress();
+      fetchUsdcBalance();
+
     }
   }, [loggedIn]);
 
@@ -197,65 +199,114 @@ function App() {
     }
   };
 
-  const loggedInView = (
-    <div>
-      <h2>Welcome to PennyFundMe!</h2>
+  // Updated loggedInView
+const loggedInView = (
+  <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+    <Paper
+      elevation={3}
+      sx={{
+        width: "100%",
+        maxWidth: 450,
+        borderRadius: 4,
+        p: 3,
+        textAlign: "center",
+        backgroundColor: "#f5f5f5",
+      }}
+    >
+      <Typography variant="h5" gutterBottom>
+        Wallet Overview
+      </Typography>
 
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <p>Your Wallet Address: {walletAddress}</p>
-        <button
+      <Box sx={{ mt: 2, mb: 2 }}>
+        <Typography variant="subtitle2" color="textSecondary">
+          Wallet Address:
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            wordBreak: "break-all",
+            overflowWrap: "anywhere",
+            fontWeight: "bold",
+            mt: 1,
+            backgroundColor: "#e0e0e0",
+            p: 1,
+            borderRadius: 1,
+          }}
+        >
+          {walletAddress}
+        </Typography>
+        <Button
           onClick={() => {
             navigator.clipboard.writeText(walletAddress);
             alert("Wallet address copied!");
           }}
-          style={{ marginLeft: "8px", cursor: "pointer" }}
+          variant="outlined"
+          color="primary"
+          sx={{ mt: 1 }}
         >
-          Copy
-        </button>
-      </div>
+          Copy Address
+        </Button>
+      </Box>
 
-      <p>Your USDC Balance: {usdcBalance ? usdcBalance : "Loading..."}</p>
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="subtitle2" color="textSecondary">
+          USDC Balance:
+        </Typography>
+        <Typography variant="h6" color="primary" sx={{ fontWeight: "bold", mt: 1 }}>
+          {usdcBalance ? usdcBalance : "Loading..."}
+        </Typography>
+      </Box>
 
-      <label>
-        Recipient Address:
-        <input
-          type="text"
-          placeholder="Enter recipient address"
+      <Box sx={{ mt: 3, mb: 2 }}>
+        <Typography variant="subtitle2" color="textSecondary">
+          Donate USDC
+        </Typography>
+        <TextField
+          label="Campaign Address"
+          variant="outlined"
+          fullWidth
           value={recipientAddress}
           onChange={(e) => setRecipientAddress(e.target.value)}
+          sx={{ mt: 1, mb: 2 }}
         />
-      </label>
-
-      <label>
-        Amount (USDC):
-        <input
+        <TextField
+          label="Amount (USDC)"
           type="number"
-          placeholder="Enter amount"
+          variant="outlined"
+          fullWidth
           value={amount}
           onChange={(e) => setAmount(parseFloat(e.target.value))}
+          sx={{ mb: 2 }}
         />
-      </label>
+        <Typography variant="caption" color="textSecondary">
+          Platform Fee (5%): {platformFee.toFixed(2)} USDC
+        </Typography>
+        <Typography variant="caption" color="textSecondary">
+          Total Amount: {totalAmount.toFixed(2)} USDC
+        </Typography>
+        <Button
+          onClick={sendWithPlatformFee}
+          disabled={!amount || totalAmount > parseFloat(usdcBalance)}
+          variant="contained"
+          color="secondary"
+          fullWidth
+          sx={{ mt: 2 }}
+        >
+          Donate USDC with Platform Fee
+        </Button>
+      </Box>
 
-      <p>Platform Fee (5%): {platformFee.toFixed(2)} USDC</p>
-      <p>Total Amount: {totalAmount.toFixed(2)} USDC</p>
-
-      <button
-        onClick={sendWithPlatformFee}
-        disabled={!amount || totalAmount > parseFloat(usdcBalance)}
-        className="card"
-      >
-        Send USDC with Platform Fee
-      </button>
-
-      <button onClick={logout} className="card">
-        Logout
-      </button>
-      <button onClick={openWalletServices} className="card">
-        Go to Wallet Services
-      </button>
-    </div>
-  );
-
+      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+        <Button onClick={logout} variant="contained" color="error">
+          Logout
+        </Button>
+        <Button onClick={openWalletServices} variant="contained" color="primary">
+          Wallet Services
+        </Button>
+      </Box>
+    </Paper>
+  </Box>
+);
   const unloggedInView = (
     <button onClick={login} className="card">Login</button>
   );
