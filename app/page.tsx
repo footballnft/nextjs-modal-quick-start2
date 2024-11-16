@@ -1,68 +1,82 @@
 "use client";
 
+// Importing necessary packages and components
 import { CHAIN_NAMESPACES, IAdapter, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { Box, Paper, Typography, Button, TextField } from "@mui/material";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
 import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin";
 import { AccountAbstractionProvider, SafeSmartAccount } from "@web3auth/account-abstraction-provider";
-import { ethers } from "ethers";
-import { formatUnits, parseUnits } from "ethers";
-import { useEffect, useState, useRef } from "react";
+import { ethers } from "ethers"; // Used for blockchain interaction
+import { formatUnits, parseUnits } from "ethers"; // Utility functions for token formatting
+import { useEffect, useState, useRef } from "react"; // React hooks for managing state and lifecycle
 
+// Web3Auth client ID for initialization
 const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_Vx6qtAE7G4K01moqw1XGRX1u8s";
-const pimlicoAPIKey = "pim_NQiLku6tPP9FW3Tn7B78JH";
-const platformFeeContractAddress = "YOUR_PLATFORM_FEE_CONTRACT_ADDRESS"; // Replace with your deployed contract address
-const usdcContractAddress = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582"; // Replace with the correct USDC contract address
 
+// API key for Pimlico (bundler and paymaster)
+const pimlicoAPIKey = "pim_NQiLku6tPP9FW3Tn7B78JH";
+
+// Platform fee contract address (to be replaced with your actual deployed contract address)
+const platformFeeContractAddress = "YOUR_PLATFORM_FEE_CONTRACT_ADDRESS";
+
+// USDC contract address on Polygon Amoy Testnet (replace with the correct address for other networks)
+const usdcContractAddress = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582";
+
+// Configuration for the blockchain (Polygon Amoy Testnet)
 const chainConfig = {
-  chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: "0x13882",
-  rpcTarget: "https://rpc.ankr.com/polygon_amoy",
-  displayName: "Polygon Amoy Testnet",
-  ticker: "MATIC",
-  tickerName: "Matic",
+  chainNamespace: CHAIN_NAMESPACES.EIP155, // Ethereum-compatible namespace
+  chainId: "0x13882", // Chain ID for Polygon Amoy Testnet
+  rpcTarget: "https://rpc.ankr.com/polygon_amoy", // RPC URL for interacting with the chain
+  displayName: "Polygon Amoy Testnet", // Friendly name for the chain
+  ticker: "MATIC", // Currency ticker
+  tickerName: "Matic", // Currency full name
 };
 
+// ABI for interacting with the platform fee contract
 const platformFeeContractABI = [
   "function transferWithPlatformFee(address recipient, uint256 amount, uint256 fee) public",
 ];
 
+// Ethereum provider for private key-based interaction
 const privateKeyProvider = new EthereumPrivateKeyProvider({
   config: { chainConfig },
 });
 
+// Account abstraction provider configuration
 const accountAbstractionProvider = new AccountAbstractionProvider({
   config: {
     chainConfig,
-    smartAccountInit: new SafeSmartAccount(),
+    smartAccountInit: new SafeSmartAccount(), // Safe smart account initialization
     bundlerConfig: {
-      url: `https://api.pimlico.io/v2/13882/rpc?apikey=${pimlicoAPIKey}`,
+      url: `https://api.pimlico.io/v2/13882/rpc?apikey=${pimlicoAPIKey}`, // Bundler API URL
     },
     paymasterConfig: {
-      url: `https://api.pimlico.io/v2/13882/rpc?apikey=${pimlicoAPIKey}`,
+      url: `https://api.pimlico.io/v2/13882/rpc?apikey=${pimlicoAPIKey}`, // Paymaster API URL
     },
   },
 });
 
-
-
 function App() {
-  const [provider, setProvider] = useState<IProvider | null>(null);
-  const [usdcBalance, setUsdcBalance] = useState<string>("");
-  const [walletAddress, setWalletAddress] = useState<string>(""); // New state for wallet address
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [walletServicesPlugin, setWalletServicesPlugin] = useState<WalletServicesPlugin | null>(null);
-  const web3auth = useRef<Web3Auth | null>(null);
-  const [pluginConnected, setPluginConnected] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  // State variables
+  const [provider, setProvider] = useState<IProvider | null>(null); // Blockchain provider
+  const [usdcBalance, setUsdcBalance] = useState<string>(""); // USDC balance
+  const [walletAddress, setWalletAddress] = useState<string>(""); // User's wallet address
+  const [loggedIn, setLoggedIn] = useState(false); // Login state
+  const [walletServicesPlugin, setWalletServicesPlugin] = useState<WalletServicesPlugin | null>(null); // Wallet plugin
+  const web3auth = useRef<Web3Auth | null>(null); // Ref for Web3Auth instance
+  const [pluginConnected, setPluginConnected] = useState(false); // Plugin connection status
+  const [isInitialized, setIsInitialized] = useState(false); // Web3Auth initialization status
 
+  // Form inputs for recipient and amount
   const [recipientAddress, setRecipientAddress] = useState("");
   const [amount, setAmount] = useState<number>(0);
 
+  // Computed platform fee and total amount
   const platformFee = amount * 0.05;
   const totalAmount = amount + platformFee;
 
+  // Function to fetch and set the user's wallet address
   const fetchWalletAddress = async () => {
     if (provider) {
       const signer = new ethers.BrowserProvider(provider).getSigner();
@@ -71,7 +85,7 @@ function App() {
     }
   };
 
-
+  // Function to fetch and set the user's USDC balance
   const fetchUsdcBalance = async () => {
     if (provider) {
       const signer = new ethers.BrowserProvider(provider).getSigner();
@@ -85,6 +99,7 @@ function App() {
     }
   };
 
+  // Initialization of Web3Auth and WalletServicesPlugin
   useEffect(() => {
     const init = async () => {
       try {
@@ -95,11 +110,13 @@ function App() {
           accountAbstractionProvider,
         };
 
+        // Initialize Web3Auth
         web3auth.current = new Web3Auth(web3AuthOptions);
         await web3auth.current.initModal();
 
+        // Add Wallet Services Plugin
         const walletPlugin = new WalletServicesPlugin({
-          wsEmbedOpts: {},
+          wsEmbedOpts: {}, // Widget configuration
           walletInitOptions: {
             whiteLabel: {
               showWidgetButton: true,
@@ -114,11 +131,13 @@ function App() {
         web3auth.current.addPlugin(walletPlugin);
         setWalletServicesPlugin(walletPlugin);
 
+        // Event listener for plugin connection
         walletPlugin.on("connected", () => {
           console.log("WalletServicesPlugin connected");
           setPluginConnected(true);
         });
 
+        // Set initial state
         setIsInitialized(true);
         setProvider(web3auth.current.provider);
         if (web3auth.current.connected) {
@@ -131,10 +150,10 @@ function App() {
       }
     };
 
-    init();
+    init(); // Call the initialization function
   }, []);
 
-   // Fetch balance when logged in state changes
+   // Refetch balance when logged in state changes
   useEffect(() => {
     if (loggedIn) {
       fetchWalletAddress();
@@ -143,7 +162,7 @@ function App() {
     }
   }, [loggedIn]);
 
-
+  // Function to handle transaction with platform fee
   const sendWithPlatformFee = async () => {
     if (!provider || !recipientAddress || amount <= 0) return;
 
@@ -157,17 +176,18 @@ function App() {
     try {
       const tx = await platformFeeContract.transferWithPlatformFee(
         recipientAddress,
-        parseUnits(amount.toString(), 6),
-        parseUnits(platformFee.toString(), 6)
+        parseUnits(amount.toString(), 6), // Convert amount to 6 decimals
+        parseUnits(platformFee.toString(), 6) // Convert fee to 6 decimals
       );
-      await tx.wait();
+      await tx.wait(); // Wait for transaction confirmation
       console.log("Transaction with platform fee sent!");
-      await fetchUsdcBalance();
+      await fetchUsdcBalance(); // Update balance after transaction
     } catch (error) {
       console.error("Transaction failed:", error);
     }
   };
 
+  // Function to log in the user
   const login = async () => {
     if (web3auth.current) {
       const web3authProvider = await web3auth.current.connect();
@@ -178,6 +198,7 @@ function App() {
     }
   };
 
+  // Function to log out the user
   const logout = async () => {
     if (web3auth.current) {
       await web3auth.current.logout();
@@ -187,6 +208,7 @@ function App() {
     }
   };
 
+   // Function to open Wallet Services UI
   const openWalletServices = async () => {
     if (walletServicesPlugin && pluginConnected) {
       try {
@@ -199,7 +221,7 @@ function App() {
     }
   };
 
-  // Updated loggedInView
+  // Views for logged-in and unlogged-in states
 const loggedInView = (
   <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
     <Paper
@@ -213,10 +235,12 @@ const loggedInView = (
         backgroundColor: "#f5f5f5",
       }}
     >
+      {/* Wallet overview */}
       <Typography variant="h5" gutterBottom>
         Wallet Overview
       </Typography>
 
+      {/* Wallet address display */}
       <Box sx={{ mt: 2, mb: 2 }}>
         <Typography variant="subtitle2" color="textSecondary">
           Wallet Address:
@@ -248,6 +272,7 @@ const loggedInView = (
         </Button>
       </Box>
 
+      {/* USDC balance display */}
       <Box sx={{ mt: 3 }}>
         <Typography variant="subtitle2" color="textSecondary">
           USDC Balance:
@@ -257,6 +282,7 @@ const loggedInView = (
         </Typography>
       </Box>
 
+      {/* Form for transferring USDC */}
       <Box sx={{ mt: 3, mb: 2 }}>
         <Typography variant="subtitle2" color="textSecondary">
           Donate USDC
@@ -278,12 +304,15 @@ const loggedInView = (
           onChange={(e) => setAmount(parseFloat(e.target.value))}
           sx={{ mb: 2 }}
         />
+        {/* Platform fee and total display */}
         <Typography variant="caption" color="textSecondary">
           Platform Fee (5%): {platformFee.toFixed(2)} USDC
         </Typography>
         <Typography variant="caption" color="textSecondary">
           Total Amount: {totalAmount.toFixed(2)} USDC
         </Typography>
+
+        {/* Buttons for interacting with the platform */}
         <Button
           onClick={sendWithPlatformFee}
           disabled={!amount || totalAmount > parseFloat(usdcBalance)}
