@@ -321,7 +321,7 @@ const loggedInView = (
           fullWidth
           sx={{ mt: 2 }}
         >
-          Donate USDC with Platform Fee
+          Send USDC with Platform Fee
         </Button>
       </Box>
 
