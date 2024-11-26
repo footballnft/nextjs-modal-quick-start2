@@ -5,7 +5,6 @@ import { CHAIN_NAMESPACES, IAdapter, IProvider, WEB3AUTH_NETWORK } from "@web3au
 import { Box, Paper, Typography, Button, TextField } from "@mui/material";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
-import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin";
 import { AccountAbstractionProvider, SafeSmartAccount } from "@web3auth/account-abstraction-provider";
 import { ethers } from "ethers"; // Used for blockchain interaction
 import { formatUnits, parseUnits } from "ethers"; // Utility functions for token formatting
@@ -63,9 +62,7 @@ function App() {
   const [usdcBalance, setUsdcBalance] = useState<string>(""); // USDC balance
   const [walletAddress, setWalletAddress] = useState<string>(""); // User's wallet address
   const [loggedIn, setLoggedIn] = useState(false); // Login state
-  const [walletServicesPlugin, setWalletServicesPlugin] = useState<WalletServicesPlugin | null>(null); // Wallet plugin
   const web3auth = useRef<Web3Auth | null>(null); // Ref for Web3Auth instance
-  const [pluginConnected, setPluginConnected] = useState(false); // Plugin connection status
   const [isInitialized, setIsInitialized] = useState(false); // Web3Auth initialization status
 
   // Form inputs for recipient and amount
@@ -113,29 +110,6 @@ function App() {
         // Initialize Web3Auth
         web3auth.current = new Web3Auth(web3AuthOptions);
         await web3auth.current.initModal();
-
-        // Add Wallet Services Plugin
-        const walletPlugin = new WalletServicesPlugin({
-          wsEmbedOpts: {}, // Widget configuration
-          walletInitOptions: {
-            whiteLabel: {
-              showWidgetButton: true,
-              buttonPosition: "bottom-right",
-              logoDark: "https://web3auth.io/images/w3a-D-Favicon-1.svg",
-              logoLight: "https://web3auth.io/images/w3a-L-Favicon-1.svg",
-            },
-            confirmationStrategy: "modal",
-          },
-        });
-
-        web3auth.current.addPlugin(walletPlugin);
-        setWalletServicesPlugin(walletPlugin);
-
-        // Event listener for plugin connection
-        walletPlugin.on("connected", () => {
-          console.log("WalletServicesPlugin connected");
-          setPluginConnected(true);
-        });
 
         // Set initial state
         setIsInitialized(true);
@@ -205,19 +179,6 @@ function App() {
       setProvider(null);
       setLoggedIn(false);
       setWalletAddress("");
-    }
-  };
-
-   // Function to open Wallet Services UI
-  const openWalletServices = async () => {
-    if (walletServicesPlugin && pluginConnected) {
-      try {
-        await walletServicesPlugin.showWalletUi();
-      } catch (error) {
-        console.error("Failed to open Wallet Services:", error);
-      }
-    } else {
-      console.error("WalletServicesPlugin is not initialized or not connected");
     }
   };
 
@@ -305,11 +266,19 @@ const loggedInView = (
           sx={{ mb: 2 }}
         />
         {/* Platform fee and total display */}
-        <Typography variant="caption" color="textSecondary">
-          Platform Fee (5%): {platformFee.toFixed(2)} USDC
+        <Typography
+          variant="subtitle2"
+          color="textSecondary"
+          sx={{ textAlign: "left", mt: 2 }}
+        >
+          Platform Fee (5%): {platformFee.toFixed(6)} USDC
         </Typography>
-        <Typography variant="caption" color="textSecondary">
-          Total Amount: {totalAmount.toFixed(2)} USDC
+        <Typography
+          variant="subtitle2"
+          color="textSecondary"
+          sx={{ textAlign: "left", mt: 1 }}
+        >
+          Total Amount: {totalAmount.toFixed(6)} USDC
         </Typography>
 
         {/* Buttons for interacting with the platform */}
@@ -329,8 +298,14 @@ const loggedInView = (
         <Button onClick={logout} variant="contained" color="error">
           Logout
         </Button>
-        <Button onClick={openWalletServices} variant="contained" color="primary">
-          Wallet Services
+
+        {/* Buy USDC button */}
+        <Button
+          onClick={() => alert("Not available for now, on testnet")}
+          variant="contained"
+          color="secondary"
+        >
+          Buy USDC
         </Button>
       </Box>
     </Paper>
