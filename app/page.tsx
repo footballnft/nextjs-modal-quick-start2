@@ -17,7 +17,7 @@ const clientId = "BN6F8-BoCoUwSBlKODDCA8yWvkpZfiflGunSxVAz4yCQ1Zxrd2u0TEjQQkjG_V
 const pimlicoAPIKey = "pim_NQiLku6tPP9FW3Tn7B78JH";
 
 // Platform fee contract address (to be replaced with your actual deployed contract address)
-const platformFeeContractAddress = "YOUR_PLATFORM_FEE_CONTRACT_ADDRESS";
+const platformFeeContractAddress = "0xc0cea5633218cbaa98c245f454d3285cf89cbd50";
 
 // USDC contract address on Polygon Amoy Testnet (replace with the correct address for other networks)
 const usdcContractAddress = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582";
